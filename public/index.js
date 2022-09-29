@@ -88,8 +88,14 @@ class Movies extends React.Component {
       'Load More'
     );
 
+    const message = React.createElement(
+      'p',
+      { className: 'message' },
+      this.state.message
+    );
+
     return this.state.loading
-      ? React.createElement('p', null, this.state.message)
+      ? message
       : React.createElement(
           'div',
           { className: 'search-results' },

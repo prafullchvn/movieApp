@@ -3,8 +3,6 @@ const addUniqueId = (movies) => (req, res, next) => {
     .sort((movie1, movie2) => +movie1.year - +movie2.year)
     .map((movie, index) => (movie.id = index + 1));
 
-  console.log(movies.slice(0, 5));
-
   next();
 };
 
