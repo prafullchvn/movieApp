@@ -5,6 +5,7 @@ const {
   searchResult,
   allMovies,
   homePage,
+  addUniqueId,
 } = require('./handler/movie');
 
 const createApp = (parsedMovieData) => {
@@ -12,10 +13,12 @@ const createApp = (parsedMovieData) => {
 
   app.use(morgan('tiny'));
 
-  app.use((req, res, next) => {
+  app.use((_, res, next) => {
     res.set('Access-Control-Allow-Origin', '*');
     next();
   });
+
+  app.use(addUniqueId(parsedMovieData));
 
   app.get('/', homePage);
 

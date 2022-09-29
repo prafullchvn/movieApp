@@ -1,6 +1,11 @@
 const API = {
   loadMovies: (count) => fetch(`/count/${count}`),
   searchMovies: (keyword) => fetch(`/search?keyword=${keyword}`),
+  allMovies: () => fetch(`/all`),
+};
+
+const formatKeyword = (keyword) => {
+  return keyword.trim().toLowerCase();
 };
 
 const MovieDetails = ({ name, year }) => {
@@ -22,24 +27,25 @@ class Movies extends React.Component {
       message: 'loading',
       loading: true,
       movies: [],
+      filteredMovies: [],
       toBeLoaded: 10,
     };
 
-    this.handleSearch = this.handleSearch.bind(this);
+    this.filterMovies = this.filterMovies.bind(this);
     this.loadMore = this.loadMore.bind(this);
   }
 
   loadMore() {
     this.setState({ toBeLoaded: this.state.toBeLoaded + 10 });
-    this.loadMovies();
   }
 
   loadMovies() {
-    API.loadMovies(this.state.toBeLoaded)
+    API.allMovies()
       .then((res) => res.json())
       .then((movies) => {
         this.setState({
           movies,
+          filteredMovies: movies,
           loading: false,
         });
       })
@@ -48,22 +54,15 @@ class Movies extends React.Component {
       });
   }
 
-  handleSearch(event) {
-    const keyword = event.target.value;
+  filterMovies(event) {
+    const keyword = formatKeyword(event.target.value);
 
-    if (keyword.trim() === '') {
-      return this.loadMovies();
-    }
+    const filteredMovies = this.state.movies.filter(({ name }) => {
+      const lowerCaseName = name.toLowerCase();
+      return lowerCaseName.includes(keyword);
+    });
 
-    API.searchMovies(keyword)
-      .then((res) => res.json())
-      .then((results) => {
-        this.setState(() => {
-          return {
-            movies: results,
-          };
-        });
-      });
+    this.setState(() => ({ filteredMovies }));
   }
 
   componentDidMount() {
@@ -71,26 +70,32 @@ class Movies extends React.Component {
   }
 
   render() {
-    const movies = this.state.movies.map((movie, index) =>
-      React.createElement(MovieDetails, { ...movie, key: index })
+    const movies = this.state.filteredMovies
+      .slice(0, this.state.toBeLoaded)
+      .map(({ id, name, year }, index) =>
+        React.createElement(MovieDetails, { name, year, key: id })
+      );
+
+    const input = React.createElement('input', {
+      id: 'search',
+      onChange: this.filterMovies,
+      placeholder: 'Search',
+    });
+
+    const loadMore = React.createElement(
+      'button',
+      { onClick: this.loadMore, className: 'load-more-btn' },
+      'Load More'
     );
+
     return this.state.loading
       ? React.createElement('p', null, this.state.message)
       : React.createElement(
           'div',
           { className: 'search-results' },
-          React.createElement('input', {
-            type: 'text',
-            id: 'search',
-            onChange: this.handleSearch,
-            placeholder: 'Search',
-          }),
+          input,
           React.createElement('div', { className: 'movies' }, movies),
-          React.createElement(
-            'button',
-            { onClick: this.loadMore, className: 'load-more-btn' },
-            'Load More'
-          )
+          loadMore
         );
   }
 }

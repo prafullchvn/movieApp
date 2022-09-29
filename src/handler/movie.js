@@ -1,8 +1,19 @@
+const addUniqueId = (movies) => (req, res, next) => {
+  movies
+    .sort((movie1, movie2) => +movie1.year - +movie2.year)
+    .map((movie, index) => (movie.id = index + 1));
+
+  console.log(movies.slice(0, 5));
+
+  next();
+};
+
 const searchResult = (parsedMovieData) => (req, res) => {
   const { keyword } = req.query;
-  const result = parsedMovieData.filter(({ name }) => {
+  const searchedMovies = parsedMovieData.filter(({ name }) => {
     return new RegExp(keyword, 'i').test(name);
   });
+
   res.json(result);
 };
 
@@ -25,4 +36,5 @@ module.exports = {
   sendRequestedCountResult,
   allMovies,
   homePage,
+  addUniqueId,
 };
